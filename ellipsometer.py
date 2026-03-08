@@ -8,23 +8,24 @@ from matplotlib.figure import Figure
 class Ellipsometer:
 
     def __init__(self):
-        self.intensity = [0,0,0,0]
+        self.voltages = [1,1,1,1]
         self.dmin = 0
         self.dmax = 2000
+        self.wavelength = 632.8
 
-    def getMeasuredPsi():
-        psi = math.acos((self.intensity[2]-self.intensity[0])/(self.intensity[2]+self.intensity[0]))/2
+    def getMeasuredPsi(self):
+        psi = math.acos((self.voltages[2]-self.voltages[0])/(self.voltages[2]+self.voltages[0]))/2
         return psi
 
-    def getMeasuredDelta():
-        delta = math.acos((self.intensity[1]-self.intensity[3])/(self.intensity[1]+self.intensity[3])/(math.sin(2*getPsi())))
+    def getMeasuredDelta(self):
+        delta = math.acos((self.voltages[1]-self.voltages[3])/(self.voltages[1]+self.voltages[3])/(math.sin(2*self.getMeasuredPsi())))
         return delta
 
-    def setIntensity(index, intensity):
-        self.intensity[index] = intensity
+    def setVoltage(self, measured_voltages):
+        self.voltages = measured_voltages
 
 
-    def getThickness(self, wavelength, psiMeasured, deltaMeasured):
+    def getThickness2(self, wavelength, psiMeasured, deltaMeasured):
         thickness = [] # thickness [angstroms]
         deviation = [] # deviation from measured
         devMin = 2000
@@ -52,7 +53,7 @@ class Ellipsometer:
         plot.set_title('Deviation Measured vs Thickness')
         return d_fit, fig
 
-    def getThickness(self, wavelength):
+    def getThickness(self):
         thickness = [] # thickness [angstroms]
         deviation = [] # deviation from measured
         devMin = 2000
@@ -63,7 +64,7 @@ class Ellipsometer:
         for d in range(self.dmin, self.dmax, 20):
             thickness.append(d)
 
-            psiCalc, deltaCalc = Sample.get_psi_delta(d*(10**(-10)), wavelength*(10**(-9)))
+            psiCalc, deltaCalc = Sample.get_psi_delta(d*(10**(-10)), self.wavelength*(10**(-9)))
 
             dev = math.sqrt((psiMeasured-psiCalc)**2+(deltaMeasured-deltaCalc)**2)
 

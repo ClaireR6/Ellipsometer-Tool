@@ -6,13 +6,13 @@ class MainController:
     def __init__(self):
         self.ellipsometer = Ellipsometer()
         self.sensor = Sensor()
-        self.voltage_measurements = [0,0,0,0]
+        self.voltage_measurements = [1,1,1,1]
 
 
     def get_voltage(self):
         voltage = self.sensor.getMeasurement()
         if voltage == None:
-            return 0
+            return 1
         return voltage
 
     def cleanup(self):
@@ -20,13 +20,8 @@ class MainController:
 
 if __name__ == "__main__":
     main = MainController()
-    print(main.sensor.getMeasurement())
+    main.ellipsometer.setVoltage(main.voltage_measurements)
     gui = GUI(main)
-    psi = main.ellipsometer.getMeasuredPsi(voltage_measurements)
-    d, plot = main.ellipsometer.getThickness(632.8, 47, 81)
-    print(d)
-    gui.set_graph(plot)
-
     gui.run()
 
 
