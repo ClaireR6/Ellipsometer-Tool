@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class GUI:
@@ -17,7 +18,7 @@ class GUI:
         self.frame_graph = tk.Frame(self.frame_outputs)
         self.frame_graph.pack()
 
-        d, plot = self.main.ellipsometer.getThickness2(632.8, 47, 81)
+        d, plot = self.main.ellipsometer.getThickness2(633, 47, 81)
         self.set_graph(plot)
 
 
@@ -25,6 +26,27 @@ class GUI:
         self.d_label.pack(pady=15)
         self.d_label.config(text="Thickness(d): "+str(d))
         
+    def frame_wavelength_init(self, parent_root):
+        frame_wavelength = tk.Frame(parent_root)
+        frame_wavelength.pack(pady=15)
+        tk.Label(frame_wavelength, text="Wavelength").grid(row=0, column=0)
+
+        self.wavelength = tk.StringVar()
+        self.wavelength.trace_add(
+            "write", 
+            lambda *args: self.on_change(*args, param="wavelength"))
+
+        #wavelengths in nm
+        combo_box = ttk.Combobox(
+            frame_wavelength,
+            textvariable=self.wavelength,
+            values=["650", "520", "633"],
+            state="readonly"
+        )
+
+        combo_box.current(0)
+
+        combo_box.grid(row=0,column=1)
 
     def frame_inputs_init(self, parent_root):
         self.frame_inputs = tk.Frame(parent_root)
@@ -34,15 +56,7 @@ class GUI:
 
         self.frame_range_init(self.frame_inputs)
 
-        frame_wavelength = tk.Frame(self.frame_inputs)
-        frame_wavelength.pack(pady=15)
-        tk.Label(frame_wavelength, text="Wavelength").grid(row=0, column=0)
-
-        vcmd = (self.root.register(self.validate_float), "%P")
-
-        wavelength = tk.Entry(frame_wavelength, validate="key", validatecommand=vcmd)
-        wavelength.grid(row=0, column=1)
-        wavelength.insert(0, 632.8)
+        self.frame_wavelength_init(self.frame_inputs)
 
         self.frame_voltage = tk.Frame(self.frame_inputs)
         self.frame_voltage.pack(pady=15)
