@@ -11,12 +11,15 @@ class Ellipsometer:
         self.voltages = [1,1,1,1]
         self.dmin = 0
         self.dmax = 2000
-        self.wavelength = 632.8
+        self.wavelength = 632.8 #In nm
+        self.Sample = Sample()
 
+    # Returns Measured Psi in RADIANS
     def getMeasuredPsi(self):
         psi = math.acos((self.voltages[2]-self.voltages[0])/(self.voltages[2]+self.voltages[0]))/2
         return psi
 
+    # Returns Measured Delta in RADIANS
     def getMeasuredDelta(self):
         delta = math.acos((self.voltages[1]-self.voltages[3])/(self.voltages[1]+self.voltages[3])/(math.sin(2*self.getMeasuredPsi())))
         return delta
@@ -24,24 +27,9 @@ class Ellipsometer:
     def setVoltage(self, measured_voltages):
         self.voltages = measured_voltages
 
-
+    # Python wont allow overloads :(
     def getThickness2(self, wavelength, psiMeasured, deltaMeasured):
-        thickness = [] # thickness [angstroms]
-        deviation = [] # deviation from measured
-        devMin = 2000
-        d_fit = 0
-        
-        for d in range(self.dmin, self.dmax, 20):
-            thickness.append(d)
-
-            psiCalc, deltaCalc = Sample.get_psi_delta(d*(10**(-10)), wavelength*(10**(-9)))
-
-            dev = math.sqrt((psiMeasured-psiCalc)**2+(deltaMeasured-deltaCalc)**2)
-
-            if dev<devMin:
-                devMin = dev
-                d_fit = d
-            deviation.append(dev)
+        thickness, deviation, d_fit = self.getFit(psiMeasured, deltaMeasured)
 
         fig = Figure(figsize=(5, 4), dpi=80)
         plot = fig.add_subplot(111)
@@ -54,24 +42,12 @@ class Ellipsometer:
         return d_fit, fig
 
     def getThickness(self):
-        thickness = [] # thickness [angstroms]
-        deviation = [] # deviation from measured
-        devMin = 2000
-        d_fit = 0
-        psiMeasured = self.getMeasuredPsi()
-        deltaMeasured = self.getMeasuredDelta()
+        # Need to convert to degress as psiCalc and deltaCalc are in degrees
+        psiMeasured = math.degrees(self.getMeasuredPsi())
+        deltaMeasured = math.degrees(self.getMeasuredDelta())
+
         
-        for d in range(self.dmin, self.dmax, 20):
-            thickness.append(d)
-
-            psiCalc, deltaCalc = Sample.get_psi_delta(d*(10**(-10)), self.wavelength*(10**(-9)))
-
-            dev = math.sqrt((psiMeasured-psiCalc)**2+(deltaMeasured-deltaCalc)**2)
-
-            if dev<devMin:
-                devMin = dev
-                d_fit = d
-            deviation.append(dev)
+        thickness, deviation, d_fit = self.getFit(psiMeasured, deltaMeasured)
 
         fig = Figure(figsize=(5, 4), dpi=80)
         plot = fig.add_subplot(111)
@@ -83,3 +59,20 @@ class Ellipsometer:
         plot.set_title('Deviation Measured vs Thickness')
         return d_fit, fig
         
+    def getFit(self, psiMeasured, deltaMeasured):
+        thickness = [] # thickness [angstroms]
+        deviation = [] # deviation from measured
+        devMin = 2000
+        d_fit = 0
+
+        for d in range(self.dmin, self.dmax, 20):
+            thickness.append(d)
+            psiCalc, deltaCalc = self.Sample.get_psi_delta(d*(10**(-10)), self.wavelength*(10**(-9)))
+    
+            dev = math.sqrt((psiMeasured-psiCalc)**2+(deltaMeasured-deltaCalc)**2)
+            if dev<devMin:
+                devMin = dev
+                d_fit = d
+            deviation.append(dev)
+
+        return thickness, deviation, d_fit
