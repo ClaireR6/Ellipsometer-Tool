@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+import ttkbootstrap as tb
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import yaml
 
@@ -13,7 +14,7 @@ class GUI:
         self.n2 = 1.46
         self.k2 = 0
 
-        self.root = tk.Tk()
+        self.root = tb.Window(themename="superhero")
         self.root.protocol("WM_DELETE_WINDOW", self.on_close) # When window is closed, run on_close before closing
         self.root.title("Ellipsometer Tool")
         self.root.geometry("900x500")
@@ -37,8 +38,10 @@ class GUI:
 
     def frame_material_init(self, parent_root):
         frame_material = tk.Frame(parent_root)
-        frame_material.pack(pady=5)
-        tk.Label(frame_material, text="Material").grid(row=0, column=0)
+        frame_material.pack(pady=5, fill="x")
+        frame_material.grid_columnconfigure(0, minsize=160)
+        frame_material.grid_columnconfigure(1, weight=1)
+        tk.Label(frame_material, text="Material").grid(row=0, column=0, sticky="w")
 
         self.material = tk.StringVar()
         self.material.trace_add(
@@ -47,21 +50,24 @@ class GUI:
         
         options = list(self.data["materials"].keys())
 
-        combo_box = ttk.Combobox(
+        combo_box = tb.Combobox(
             frame_material,
             textvariable=self.material,
             values=options,
-            state="readonly"
+            state="readonly",
+            bootstyle="info",
         )
 
         combo_box.current(0)
 
-        combo_box.grid(row=0,column=1)
+        combo_box.grid(row=0,column=1, sticky="ew")
 
     def frame_wavelength_init(self, parent_root):
         frame_wavelength = tk.Frame(parent_root)
-        frame_wavelength.pack(pady=5)
-        tk.Label(frame_wavelength, text="Wavelength").grid(row=0, column=0)
+        frame_wavelength.pack(pady=5, fill="x")
+        frame_wavelength.grid_columnconfigure(0, minsize=160)
+        frame_wavelength.grid_columnconfigure(1, weight=1)
+        tk.Label(frame_wavelength, text="Wavelength").grid(row=0, column=0, sticky="w")
 
         self.wavelength = tk.StringVar()
         self.wavelength.trace_add(
@@ -69,22 +75,25 @@ class GUI:
             lambda *args: self.on_change(*args, param="wavelength"))
 
         #wavelengths in nm
-        combo_box = ttk.Combobox(
+        combo_box = tb.Combobox(
             frame_wavelength,
             textvariable=self.wavelength,
             values=["633", "520", "650"],
-            state="readonly"
+            state="readonly",
+            bootstyle="info"
         )
 
         combo_box.current(0)
 
-        combo_box.grid(row=0,column=1)
+        combo_box.grid(row=0,column=1, sticky="ew")
 
     def frame_aoi_init(self, parent_root):
         frame_aoi = tk.Frame(parent_root)
         frame_aoi.pack(pady=5)
+        frame_aoi.grid_columnconfigure(0, minsize=160)
+        frame_aoi.grid_columnconfigure(1, weight=1)
 
-        tk.Label(frame_aoi, text="Angle of Incidence").grid(row=0, column=0)
+        tk.Label(frame_aoi, text="Angle of Incidence").grid(row=0, column=0, sticky="w")
 
         # Call on_change when AoI_Var is modified
         self.AoI_Var = tk.StringVar()
@@ -95,8 +104,8 @@ class GUI:
         
         vcmd = (self.root.register(self.validate_int), "%P")
 
-        AoI = tk.Entry(frame_aoi, textvariable=self.AoI_Var, validate="key", validatecommand=vcmd)
-        AoI.grid(row=0, column=1)
+        AoI = tb.Entry(frame_aoi, textvariable=self.AoI_Var, validate="key", validatecommand=vcmd, bootstyle="info")
+        AoI.grid(row=0, column=1, sticky="ew")
         AoI.insert(0, 70)
 
     def frame_inputs_init(self, parent_root):
@@ -120,11 +129,12 @@ class GUI:
         # Call init for alpha angle control buttons + labels
         self.frame_alpha_angles_init(self.frame_inputs)
 
-        calculateBtn = tk.Button(
+        calculateBtn = tb.Button(
             self.frame_inputs, 
             text="Calculate", 
             width=10, 
-            command=lambda: self.calculate()
+            command=lambda: self.calculate(),
+            bootstyle="success"
         )
         calculateBtn.pack(pady=15)
 
@@ -145,34 +155,38 @@ class GUI:
         labelNeg45.grid(row=1, column=3)
 
         # IMPORTANT: use lambda so function is not called immediately
-        button0 = tk.Button(
+        button0 = tb.Button(
             frame_alpha_angles,
             text="0",
-            width=10,
+            width=5,
+            bootstyle="info",
             command=lambda: self.set_voltage(0, label0)
         )
         button0.grid(row=0, column=0, padx=5)
         
-        button45 = tk.Button( # 45 Degree Button
+        button45 = tb.Button( # 45 Degree Button
             frame_alpha_angles,
             text="45",
-            width=10,
+            width=5,
+            bootstyle="info",
             command=lambda: self.set_voltage(1, label45)
         )
         button45.grid(row=0, column=1, padx=5)
 
-        button90 = tk.Button(
+        button90 = tb.Button(
             frame_alpha_angles,
             text="90",
-            width=10,
+            width=5,
+            bootstyle="info",
             command=lambda: self.set_voltage(2, label90)
         )
         button90.grid(row=0, column=2, padx=5)
 
-        buttonNeg45 = tk.Button(
+        buttonNeg45 = tb.Button(
             frame_alpha_angles,
             text="-45",
-            width=10,
+            width=5,
+            bootstyle="info",
             command=lambda: self.set_voltage(3, labelNeg45)
         )
         buttonNeg45.grid(row=0, column=3, padx=5)
@@ -180,9 +194,11 @@ class GUI:
     def frame_range_init(self, parent_frame):
         frame_range = tk.Frame(parent_frame)
         frame_range.pack(pady=15)
-
-        tk.Label(frame_range, text="Max [Angstroms]").grid(row=0, column=0)
-        tk.Label(frame_range, text="Min [Angstroms]").grid(row=1, column=0)
+        frame_range.grid_columnconfigure(0, minsize=160)
+        frame_range.grid_columnconfigure(1, weight=1)
+        
+        tk.Label(frame_range, text="Max [Angstroms]").grid(row=0, column=0, sticky="w")
+        tk.Label(frame_range, text="Min [Angstroms]").grid(row=1, column=0, sticky="w")
 
         # Call on_change when dMax_Var is modified
         self.dMax_Var = tk.StringVar()
@@ -198,14 +214,14 @@ class GUI:
         
         vcmd = (self.root.register(self.validate_int), "%P")
 
-        dMax = tk.Entry(frame_range, textvariable=self.dMax_Var, validate="key", validatecommand=vcmd)
+        dMax = tb.Entry(frame_range, textvariable=self.dMax_Var, validate="key", validatecommand=vcmd, bootstyle="info")
         dMax.insert(0, 2000)
-        dMin = tk.Entry(frame_range, textvariable=self.dMin_Var, validate="key", validatecommand=vcmd)
+        dMin = tb.Entry(frame_range, textvariable=self.dMin_Var, validate="key", validatecommand=vcmd, bootstyle="info")
         dMin.insert(0, 0)
         
 
-        dMax.grid(row=0, column=1)
-        dMin.grid(row=1, column=1)
+        dMax.grid(row=0, column=1, sticky="ew")
+        dMin.grid(row=1, column=1, sticky="ew")
 
     def calculate(self):
         self.main.ellipsometer.setVoltage(self.main.voltage_measurements)
