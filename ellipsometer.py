@@ -11,8 +11,20 @@ class Ellipsometer:
         self.voltages = [1,1,1,1]
         self.dmin = 0
         self.dmax = 2000
-        self.wavelength = 632.8 #In nm
+        self.wavelength = 633 #In nm
         self.Sample = Sample()
+    
+    def printVals(self):
+        print(self.wavelength, self.Sample.phi1, self.Sample.n_2, self.Sample.k_2)
+
+    def setSampleConstants(self, n, k):
+        self.Sample.set_constants(n, k)
+
+    def setSampleAoI(self, angle):
+        self.Sample.set_aoi(angle)
+
+    def getWavelength(self):
+        return self.wavelength
 
     # Returns Measured Psi in RADIANS
     def getMeasuredPsi(self):
