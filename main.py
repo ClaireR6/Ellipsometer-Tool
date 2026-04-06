@@ -1,6 +1,8 @@
 from ellipsometer import Ellipsometer
 from gui import GUI
 from light_sensor import Sensor
+from TypedUnit import ureg
+from PyOptik import MaterialBank
 
 class MainController:
     def __init__(self):
@@ -10,7 +12,7 @@ class MainController:
 
 
     def get_voltage(self):
-        voltage = self.sensor.getMeasurement()
+        voltage = None #self.sensor.getMeasurement()
         if voltage == None:
             return 1
         return voltage
@@ -21,6 +23,7 @@ class MainController:
 if __name__ == "__main__":
     main = MainController()
     main.ellipsometer.setVoltage(main.voltage_measurements)
+    
     gui = GUI(main)
     gui.run()
 

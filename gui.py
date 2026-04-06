@@ -1,19 +1,28 @@
 import tkinter as tk
 from tkinter import ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import yaml
 
 class GUI:
     def __init__(self, main_controller):
+        with open("materials.yml", "r") as file:
+            self.data = yaml.safe_load(file)
+
         self.main = main_controller
         self.canvas = None
+        self.n2 = 1.46
+        self.k2 = 0
 
         self.root = tk.Tk()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close) # When window is closed, run on_close before closing
         self.root.title("Ellipsometer Tool")
         self.root.geometry("900x500")
 
-        self.frame_inputs_init(self.root)
-        self.frame_outputs = tk.Frame(self.root)
+        self.frame_main = tk.Frame(self.root)
+        self.frame_main.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.frame_inputs_init(self.frame_main)
+        self.frame_outputs = tk.Frame(self.frame_main)
         self.frame_outputs.grid(row=0, column=1, padx=10)
         self.frame_graph = tk.Frame(self.frame_outputs)
         self.frame_graph.pack()
@@ -25,10 +34,33 @@ class GUI:
         self.d_label = tk.Label(self.frame_outputs, text="Thickness(d): --")
         self.d_label.pack(pady=15)
         self.d_label.config(text="Thickness(d): "+str(d))
+
+    def frame_material_init(self, parent_root):
+        frame_material = tk.Frame(parent_root)
+        frame_material.pack(pady=5)
+        tk.Label(frame_material, text="Material").grid(row=0, column=0)
+
+        self.material = tk.StringVar()
+        self.material.trace_add(
+            "write", 
+            lambda *args: self.on_change(*args, param="material"))
         
+        options = list(self.data["materials"].keys())
+
+        combo_box = ttk.Combobox(
+            frame_material,
+            textvariable=self.material,
+            values=options,
+            state="readonly"
+        )
+
+        combo_box.current(0)
+
+        combo_box.grid(row=0,column=1)
+
     def frame_wavelength_init(self, parent_root):
         frame_wavelength = tk.Frame(parent_root)
-        frame_wavelength.pack(pady=15)
+        frame_wavelength.pack(pady=5)
         tk.Label(frame_wavelength, text="Wavelength").grid(row=0, column=0)
 
         self.wavelength = tk.StringVar()
@@ -40,7 +72,7 @@ class GUI:
         combo_box = ttk.Combobox(
             frame_wavelength,
             textvariable=self.wavelength,
-            values=["650", "520", "633"],
+            values=["633", "520", "650"],
             state="readonly"
         )
 
@@ -48,15 +80,35 @@ class GUI:
 
         combo_box.grid(row=0,column=1)
 
+    def frame_aoi_init(self, parent_root):
+        frame_aoi = tk.Frame(parent_root)
+        frame_aoi.pack(pady=5)
+
+        tk.Label(frame_aoi, text="Angle of Incidence").grid(row=0, column=0)
+
+        # Call on_change when AoI_Var is modified
+        self.AoI_Var = tk.StringVar()
+        self.AoI_Var.trace_add(
+            "write", 
+            lambda *args: self.on_change(*args, param="aoi"))
+
+        
+        vcmd = (self.root.register(self.validate_int), "%P")
+
+        AoI = tk.Entry(frame_aoi, textvariable=self.AoI_Var, validate="key", validatecommand=vcmd)
+        AoI.grid(row=0, column=1)
+        AoI.insert(0, 70)
+
     def frame_inputs_init(self, parent_root):
         self.frame_inputs = tk.Frame(parent_root)
         self.frame_inputs.grid(row=0, column=0, padx=10)
 
         tk.Label(self.frame_inputs, text="Film thickness range").pack()
-
         self.frame_range_init(self.frame_inputs)
-
+        
+        self.frame_material_init(self.frame_inputs)
         self.frame_wavelength_init(self.frame_inputs)
+        self.frame_aoi_init(self.frame_inputs)
 
         self.frame_voltage = tk.Frame(self.frame_inputs)
         self.frame_voltage.pack(pady=15)
@@ -70,7 +122,7 @@ class GUI:
 
         calculateBtn = tk.Button(
             self.frame_inputs, 
-            text="Calculate d", 
+            text="Calculate", 
             width=10, 
             command=lambda: self.calculate()
         )
@@ -187,17 +239,34 @@ class GUI:
         self.root.after(100, self.update_voltage)
 
     def on_change(self, *args, param=None):
+        ellipsometer = self.main.ellipsometer
+
         if param == "max": 
             value = self.dMax_Var.get()
-            self.main.ellipsometer.dmax = int(value) if value else 0
+            ellipsometer.dmax = int(value) if value else 0
         elif param == "min":
             value = self.dMin_Var.get()
-            self.main.ellipsometer.dmin = int(value) if value else 0
+            ellipsometer.dmin = int(value) if value else 0
         elif param == "wavelength":
             value = self.wavelength.get()
-            self.main.ellipsometer.wavelength = float(value) if value else 0
+            ellipsometer.wavelength = float(value) if value else 0
+        elif param == "material":
+            value = self.material.get()
+            material = self.data["materials"].get(value)
+            if material is None: return
+            wave = ellipsometer.getWavelength()
+            mat_wave = material[wave]
+            mat_n = mat_wave["n"]
+            mat_k = mat_wave["k"]
+            print(mat_n, mat_k)
+            ellipsometer.setSampleConstants(mat_n, mat_k)
+        elif param == "aoi":
+            value = self.AoI_Var.get()
+            ellipsometer.setSampleAoI(int(value)) if value else 70
         else:
             print("Invalid Param")
+
+        ellipsometer.printVals()
 
     def run(self):
         self.root.mainloop()
