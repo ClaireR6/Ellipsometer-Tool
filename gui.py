@@ -240,9 +240,9 @@ class GUI:
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
     def set_voltage(self, index, label):
-        voltage = self.main.get_voltage()
+        voltage = self.main.get_v_max()
 
-        label.config(text=str(voltage))
+        label.config(text=str(round(voltage,3)))
         self.main.voltage_measurements[index] = voltage
         
     # Continuous voltage update
@@ -251,6 +251,11 @@ class GUI:
 
         if voltage is not None:
             self.voltage_label.config(text=f"{voltage:.3f} V")
+
+        # write to file every reading
+        with open("voltage_data.txt", "a") as f:
+            f.write(f"{voltage:.6f}\n")
+            f.flush()
 
         self.root.after(100, self.update_voltage)
 
