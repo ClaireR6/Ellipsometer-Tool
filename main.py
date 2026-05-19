@@ -11,7 +11,7 @@ class MainController:
         self.sensor = Sensor()
         self.voltage_measurements = [1,1,1,1]
 
-
+    # Returns max voltage from 5 second stream of voltage measurements
     def get_v_max(self):
         v_max = 0
         # Get the current time
@@ -29,7 +29,7 @@ class MainController:
         
         return v_max
 
-
+    # Sends constant voltage stream from Sensor
     def get_voltage(self):
         voltage = self.sensor.getMeasurement()
         if voltage == None:
@@ -41,7 +41,7 @@ class MainController:
 
 if __name__ == "__main__":
     main = MainController()
-    main.ellipsometer.setVoltage(main.voltage_measurements)
+    main.ellipsometer.setVoltage(main.voltage_measurements) # Sets initial voltage measurements to 1 for all angles and generates a starting graph
 
     gui = GUI(main)
     gui.run()

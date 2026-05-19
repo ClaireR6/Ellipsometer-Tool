@@ -8,12 +8,13 @@ from matplotlib.figure import Figure
 class Ellipsometer:
 
     def __init__(self):
-        self.voltages = [1,1,1,1]
+        self.voltages = [1,1,1,1] # 0 45 90 -45 order
         self.dmin = 0
         self.dmax = 2000
         self.wavelength = 633 #In nm
         self.Sample = Sample()
-    
+
+    # Debug method to print out current values of wavelength, angle of incidence, and n and k of sample
     def printVals(self):
         print(self.wavelength, self.Sample.phi1, self.Sample.n_2, self.Sample.k_2)
 
@@ -40,6 +41,7 @@ class Ellipsometer:
         self.voltages = measured_voltages
 
     # Python wont allow overloads :(
+    # psiMeasured and deltaMeasured must be in degrees
     def getThickness2(self, wavelength, psiMeasured, deltaMeasured):
         thickness, deviation, d_fit = self.getFit(psiMeasured, deltaMeasured)
 
@@ -57,7 +59,6 @@ class Ellipsometer:
         # Need to convert to degress as psiCalc and deltaCalc are in degrees
         psiMeasured = math.degrees(self.getMeasuredPsi())
         deltaMeasured = math.degrees(self.getMeasuredDelta())
-
         
         thickness, deviation, d_fit = self.getFit(psiMeasured, deltaMeasured)
 
@@ -82,9 +83,10 @@ class Ellipsometer:
             psiCalc, deltaCalc = self.Sample.get_psi_delta(d*(10**(-10)), self.wavelength*(10**(-9)))
     
             dev = math.sqrt((psiMeasured-psiCalc)**2+(deltaMeasured-deltaCalc)**2)
+           
             if dev<devMin:
                 devMin = dev
                 d_fit = d
             deviation.append(dev)
-
+        
         return thickness, deviation, d_fit

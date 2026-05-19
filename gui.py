@@ -36,6 +36,7 @@ class GUI:
         self.d_label.pack(pady=15)
         self.d_label.config(text="Thickness(d): "+str(d))
 
+    # Frame containing user input for material selection
     def frame_material_init(self, parent_root):
         frame_material = tk.Frame(parent_root)
         frame_material.pack(pady=5, fill="x")
@@ -62,6 +63,7 @@ class GUI:
 
         combo_box.grid(row=0,column=1, sticky="ew")
 
+    # Frame containing user input for wavelength selection
     def frame_wavelength_init(self, parent_root):
         frame_wavelength = tk.Frame(parent_root)
         frame_wavelength.pack(pady=5, fill="x")
@@ -87,6 +89,7 @@ class GUI:
 
         combo_box.grid(row=0,column=1, sticky="ew")
 
+    # Frame containing user input for angle of incidence
     def frame_aoi_init(self, parent_root):
         frame_aoi = tk.Frame(parent_root)
         frame_aoi.pack(pady=5)
@@ -108,6 +111,7 @@ class GUI:
         AoI.grid(row=0, column=1, sticky="ew")
         AoI.insert(0, 70)
 
+    # Frame containing all user input subframes
     def frame_inputs_init(self, parent_root):
         self.frame_inputs = tk.Frame(parent_root)
         self.frame_inputs.grid(row=0, column=0, padx=10)
@@ -141,6 +145,7 @@ class GUI:
         # Start continuous voltage updates
         self.update_voltage()
 
+    # Frame containing buttons and labels for voltage measurements at each alpha angle (0, 45, 90, -45)
     def frame_alpha_angles_init(self, parent_frame):
         frame_alpha_angles = tk.Frame(parent_frame)
         frame_alpha_angles.pack(pady=15)
@@ -191,6 +196,7 @@ class GUI:
         )
         buttonNeg45.grid(row=0, column=3, padx=5)
         
+    # Frame containing user input for film thickness range (dmin and dmax)
     def frame_range_init(self, parent_frame):
         frame_range = tk.Frame(parent_frame)
         frame_range.pack(pady=15)
@@ -229,6 +235,8 @@ class GUI:
         self.d_label.config(text="Thickness(d): "+str(d))
         self.set_graph(plot)
     
+    # Change graph display to new plot.
+    # Takes
     def set_graph(self, plot):
         # Remove old canvas if it exists
         if self.canvas is not None:
@@ -239,6 +247,8 @@ class GUI:
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
+    # Takes array index according to angle and gui label to update, 
+    # sets voltage measurement for that angle in main controller
     def set_voltage(self, index, label):
         voltage = self.main.get_v_max()
 
@@ -252,13 +262,9 @@ class GUI:
         if voltage is not None:
             self.voltage_label.config(text=f"{voltage:.3f} V")
 
-        # write to file every reading
-        with open("voltage_data.txt", "a") as f:
-            f.write(f"{voltage:.6f}\n")
-            f.flush()
-
         self.root.after(100, self.update_voltage)
 
+    # Update ellipsometer variables according to user input
     def on_change(self, *args, param=None):
         ellipsometer = self.main.ellipsometer
 
@@ -289,9 +295,11 @@ class GUI:
 
         ellipsometer.printVals()
 
+    # Start up
     def run(self):
         self.root.mainloop()
 
+    # Cleanup method to be called on window close
     def on_close(self):
         self.main.cleanup()
         self.root.destroy()

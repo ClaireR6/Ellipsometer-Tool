@@ -19,6 +19,14 @@ class Sensor:
     def get_sensor(self):
         return lq.select_sensors(['A'])
 
+    def flush_buffer(self):
+        """Reads and discards all data currently in the buffer."""
+        # Most LabQuest libraries return an empty list or None 
+        # when the buffer is empty.
+        data = lq.read('ch1')
+        while not (data is None):
+            data = lq.read('ch1')
+
 # A very simple iterated reading of 10 measurements in the span of 
 ''' 
 lq.start()
