@@ -21,5 +21,5 @@ Installation:
     and activate the environment:
     .\venv\Scripts\activate
 3. Install Dependencies: 
-    pip install -r requirements.txt
+    python -m pip install -r requirements.txt
 4. Run python main.py
