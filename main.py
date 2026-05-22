@@ -1,8 +1,6 @@
 from ellipsometer import Ellipsometer
 from gui import GUI
 from light_sensor import Sensor
-from TypedUnit import ureg
-from PyOptik import MaterialBank
 from datetime import datetime, timedelta
 
 class MainController:

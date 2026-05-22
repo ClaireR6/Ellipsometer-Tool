@@ -1,3 +1,4 @@
 labquest
 ttkbootstrap
 matplotlib
+pyyaml
